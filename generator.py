@@ -10,6 +10,8 @@ SERVER_SERVICE = """
       - LOGGING_LEVEL=DEBUG
     networks:
       - testing_net
+    volumes:
+      - server-volume:/server/config.ini
 """
 
 CLIENT_SERVICE = """
@@ -24,6 +26,8 @@ CLIENT_SERVICE = """
       - testing_net
     depends_on:
       - server
+    volumes:
+      - client-volume:/client/config.yaml
 """
 
 NETWORKS = """
@@ -35,6 +39,11 @@ networks:
         - subnet: 172.25.125.0/24
 """
 
+VOLUMES = """
+volumes:
+  server-volume:
+  client-volume:
+"""
 
 def save(file: str, data: str) -> None:
     with open(file, "w") as f:
@@ -51,6 +60,7 @@ def run(file: str, n_clients: int) -> None:
             .replace("CLI_ID=id", f"CLI_ID={i+1}")
 
     data += NETWORKS
+    data += VOLUMES
 
     save(file, data)
 
