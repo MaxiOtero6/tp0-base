@@ -11,7 +11,7 @@ SERVER_SERVICE = """
     networks:
       - testing_net
     volumes:
-      - server-volume:/server/config.ini
+      - server-volume:/app/config.ini
 """
 
 CLIENT_SERVICE = """
@@ -27,7 +27,7 @@ CLIENT_SERVICE = """
     depends_on:
       - server
     volumes:
-      - client-volume:/client/config.yaml
+      - client-volume:/app/config.yaml
 """
 
 NETWORKS = """
@@ -44,6 +44,7 @@ volumes:
   server-volume:
   client-volume:
 """
+
 
 def save(file: str, data: str) -> None:
     with open(file, "w") as f:
