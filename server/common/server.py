@@ -1,3 +1,4 @@
+import signal
 import socket
 import logging
 
@@ -9,6 +10,10 @@ class Server:
         self._server_socket.bind(('', port))
         self._server_socket.listen(listen_backlog)
 
+        self._running = False
+
+        signal.signal(signal.SIGTERM, self.__shutdown)
+
     def run(self):
         """
         Dummy Server loop
@@ -18,11 +23,17 @@ class Server:
         finishes, servers starts to accept new connections again
         """
 
-        # TODO: Modify this program to handle signal to graceful shutdown
-        # the server
-        while True:
-            client_sock = self.__accept_new_connection()
-            self.__handle_client_connection(client_sock)
+        self._running = True
+
+        while self._running:
+            try:
+                client_sock = self.__accept_new_connection()
+                self.__handle_client_connection(client_sock)
+
+            except OSError as e:
+                if self._running:
+                    logging.error(
+                        f"action: accept_connections | result: fail | error: {str(e)}")
 
     def __handle_client_connection(self, client_sock):
         """
@@ -35,11 +46,13 @@ class Server:
             # TODO: Modify the receive to avoid short-reads
             msg = client_sock.recv(1024).rstrip().decode('utf-8')
             addr = client_sock.getpeername()
-            logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
+            logging.info(
+                f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
             # TODO: Modify the send to avoid short-writes
             client_sock.send("{}\n".format(msg).encode('utf-8'))
         except OSError as e:
-            logging.error("action: receive_message | result: fail | error: {e}")
+            logging.error(
+                f"action: receive_message | result: fail | error: {str(e)}")
         finally:
             client_sock.close()
 
@@ -54,5 +67,18 @@ class Server:
         # Connection arrived
         logging.info('action: accept_connections | result: in_progress')
         c, addr = self._server_socket.accept()
-        logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
+        logging.info(
+            f'action: accept_connections | result: success | ip: {addr[0]}')
         return c
+
+    def __shutdown(self, signum, frame):
+        """
+        Shutdown server
+
+        Function that closes the server socket and stops the server loop
+        """
+        self._running = False
+        self._server_socket.close()
+        signal_name: str = signal.Signals(signum).name
+        logging.info(
+            f'action: exit | result: success | signal: {signal_name}')
