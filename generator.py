@@ -18,7 +18,7 @@ CLIENT_SERVICE = """
     image: client:latest
     entrypoint: /client
     environment:
-      - CLI_ID=1
+      - CLI_ID=id
       - CLI_LOG_LEVEL=DEBUG
     networks:
       - testing_net
@@ -47,7 +47,8 @@ def run(file: str, n_clients: int) -> None:
     for i in range(n_clients):
         data += CLIENT_SERVICE \
             .replace("client-service-name", f"client{i+1}") \
-            .replace("client-container-name", f"client{i+1}")
+            .replace("client-container-name", f"client{i+1}") \
+            .replace("CLI_ID=id", f"CLI_ID={i+1}")
 
     data += NETWORKS
 
