@@ -11,7 +11,7 @@ SERVER_SERVICE = """
     networks:
       - testing_net
     volumes:
-      - server-volume:/app/config.ini
+      - ./server/config.ini:/config.ini
 """
 
 CLIENT_SERVICE = """
@@ -27,7 +27,7 @@ CLIENT_SERVICE = """
     depends_on:
       - server
     volumes:
-      - client-volume:/app/config.yaml
+      - ./client/config.yaml:/config.yaml
 """
 
 NETWORKS = """
@@ -37,12 +37,6 @@ networks:
       driver: default
       config:
         - subnet: 172.25.125.0/24
-"""
-
-VOLUMES = """
-volumes:
-  server-volume:
-  client-volume:
 """
 
 
@@ -61,7 +55,6 @@ def run(file: str, n_clients: int) -> None:
             .replace("CLI_ID=id", f"CLI_ID={i+1}")
 
     data += NETWORKS
-    data += VOLUMES
 
     save(file, data)
 
