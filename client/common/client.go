@@ -1,7 +1,6 @@
 package common
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/7574-sistemas-distribuidos/docker-compose-init/client/comms"
@@ -66,14 +65,17 @@ func (c *Client) StartClientLoop() {
 			// Create the connection the server in every loop iteration. Send an
 			c.createClientSocket()
 
-			c.conn.SendAll(
-				[]byte(
-					fmt.Sprintf("[CLIENT %v] Message N°%v\n",
-						c.config.ID,
-						msgID,
-					),
-				),
-			)
+			bet, err := newBet()
+
+			if err != nil {
+				log.Errorf("action: create_bet | result: fail | client_id: %v | error: %v",
+					c.config.ID,
+					err,
+				)
+				return
+			}
+
+			c.conn.SendAll(bet.Serialize())
 
 			msg, err := c.conn.ReadAll()
 			c.conn.Close()
