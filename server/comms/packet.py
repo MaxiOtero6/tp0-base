@@ -1,4 +1,4 @@
-from server.common.utils import Bet
+from common.utils import Bet
 
 
 def deserialize(data: bytes) -> Bet:
@@ -18,6 +18,7 @@ def deserialize(data: bytes) -> Bet:
     number: str = split.pop(0)
 
     return Bet(agency, first_name, last_name, document, birthday, number)
+
 
 def serialize(bet: Bet) -> bytes:
     """

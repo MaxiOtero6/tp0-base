@@ -1,8 +1,8 @@
 import signal
 import logging
 from comms.socket import Socket
-from server.common.utils import Bet, store_bets
-from server.comms.packet import deserialize, serialize
+from common.utils import Bet, store_bets
+from comms.packet import deserialize, serialize
 
 
 class Server:
