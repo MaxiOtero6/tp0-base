@@ -15,9 +15,6 @@ func newBet() (packets.BetPacket, error) {
 	document := os.Getenv("DOCUMENTO")
 	birthdate := os.Getenv("NACIMIENTO")
 
-	fmt.Println(firstname, lastname, document, birthdate)
-	fmt.Println(os.Getenv("CLI_ID"), os.Getenv("NUMERO"))
-
 	if firstname == "" || lastname == "" || document == "" || birthdate == "" {
 		return packets.BetPacket{}, fmt.Errorf("missing required fields")
 	}
