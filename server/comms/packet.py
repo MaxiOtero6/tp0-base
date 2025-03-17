@@ -24,4 +24,4 @@ def serialize(bet: Bet) -> bytes:
     """
     Serialize a Bet object to a byte string.
     """
-    return f"bet {bet.document} {bet.number}".encode("utf-8")
+    return f"bet {bet.document} {bet.number}\n".encode("utf-8")
