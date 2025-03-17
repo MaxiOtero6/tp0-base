@@ -33,13 +33,8 @@ func NewBetResponse(data string) (*BetPacket, error) {
 		return nil, &deserializationError{Data: data}
 	}
 
-	agency_raw := split[0]
+	document := split[0]
 	number_raw := split[1]
-
-	agency, err := strconv.Atoi(agency_raw)
-	if err != nil {
-		return nil, err
-	}
 
 	number, err := strconv.Atoi(number_raw)
 	if err != nil {
@@ -47,8 +42,8 @@ func NewBetResponse(data string) (*BetPacket, error) {
 	}
 
 	return &BetPacket{
-		Agency: agency,
-		Number: number,
+		Document: document,
+		Number:   number,
 	}, nil
 }
 
