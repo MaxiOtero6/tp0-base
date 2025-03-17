@@ -1,20 +1,20 @@
 import signal
-import socket
 import logging
+from comms.socket import Socket
 
 
 class Server:
-    def __init__(self, port, listen_backlog):
+    def __init__(self, port: int, listen_backlog: int):
         # Initialize server socket
-        self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._server_socket.bind(('', port))
-        self._server_socket.listen(listen_backlog)
+        self._server_socket = Socket(
+            address=('', port), listen_backlog=listen_backlog
+        )
 
         self._running = False
 
         signal.signal(signal.SIGTERM, self.__shutdown)
 
-    def run(self):
+    def run(self) -> None:
         """
         Dummy Server loop
 
@@ -35,7 +35,7 @@ class Server:
                     logging.error(
                         f"action: accept_connections | result: fail | error: {str(e)}")
 
-    def __handle_client_connection(self, client_sock):
+    def __handle_client_connection(self, client_sock: Socket) -> None:
         """
         Read message from a specific client socket and closes the socket
 
@@ -43,20 +43,22 @@ class Server:
         client socket will also be closed
         """
         try:
-            # TODO: Modify the receive to avoid short-reads
-            msg = client_sock.recv(1024).rstrip().decode('utf-8')
-            addr = client_sock.getpeername()
+            msg: str = client_sock.recv_all().decode('utf-8')
+            addr: tuple[str, int] = client_sock.address
+
             logging.info(
-                f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
-            # TODO: Modify the send to avoid short-writes
-            client_sock.send("{}\n".format(msg).encode('utf-8'))
+                f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}'
+            )
+
+            client_sock.send_all(f"{msg}\n".encode('utf-8'))
         except OSError as e:
             logging.error(
-                f"action: receive_message | result: fail | error: {str(e)}")
+                f"action: receive_message | result: fail | error: {str(e)}"
+            )
         finally:
             client_sock.close()
 
-    def __accept_new_connection(self):
+    def __accept_new_connection(self) -> Socket:
         """
         Accept new connections
 
@@ -66,10 +68,7 @@ class Server:
 
         # Connection arrived
         logging.info('action: accept_connections | result: in_progress')
-        c, addr = self._server_socket.accept()
-        logging.info(
-            f'action: accept_connections | result: success | ip: {addr[0]}')
-        return c
+        return self._server_socket.accept()
 
     def __shutdown(self, signum, frame):
         """
