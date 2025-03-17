@@ -11,11 +11,6 @@ const (
 	Bet PacketType = "bet"
 )
 
-// Packet Interface that defines the methods that every packet must implement
-type Packet interface {
-	Serialize() []byte
-}
-
 // Error returned when an unknown packet is received
 type unknownPacket struct {
 	Header PacketType
@@ -26,7 +21,7 @@ func (e *unknownPacket) Error() string {
 }
 
 // Deserialize Deserializes a message into a packet struct
-func Deserialize(msg []byte) (Packet, error) {
+func Deserialize(msg []byte) (*BetPacket, error) {
 	data := string(msg)
 
 	split := strings.SplitN(data, " ", 2)

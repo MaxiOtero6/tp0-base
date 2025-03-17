@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/7574-sistemas-distribuidos/docker-compose-init/client/comms"
+	"github.com/7574-sistemas-distribuidos/docker-compose-init/client/comms/packets"
 	"github.com/op/go-logging"
 )
 
@@ -88,14 +89,28 @@ func (c *Client) StartClientLoop() {
 				return
 			}
 
+			response, err := packets.Deserialize(msg)
+
+			if err != nil {
+				log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
+					c.config.ID,
+					err,
+				)
+				return
+			}
+
 			log.Infof("action: receive_message | result: success | client_id: %v | msg: %v",
 				c.config.ID,
 				msg,
 			)
 
+			log.Infof("action: apuesta_enviada | result: success | dni: %v | numero: %v",
+				response.Document,
+				response.Number,
+			)
+
 			// Wait a time between sending one message and the next one
 			time.Sleep(c.config.LoopPeriod)
-
 		}
 	}
 
