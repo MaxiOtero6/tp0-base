@@ -57,7 +57,7 @@ class Server:
             store_bets([bet])
 
             logging.info(
-                f"action: apuesta_almacenada | result: success | dni: ${bet.document} | numero: ${bet.number}"
+                f"action: apuesta_almacenada | result: success | dni: {bet.document} | numero: {bet.number}"
             )
 
             client_sock.send_all(serialize(bet))
