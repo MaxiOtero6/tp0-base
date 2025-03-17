@@ -1,6 +1,8 @@
 import signal
 import logging
 from comms.socket import Socket
+from server.common.utils import Bet, store_bets
+from server.comms.packet import deserialize, serialize
 
 
 class Server:
@@ -43,14 +45,26 @@ class Server:
         client socket will also be closed
         """
         try:
-            msg: str = client_sock.recv_all().decode('utf-8')
+            msg: bytes = client_sock.recv_all()
             addr: tuple[str, int] = client_sock.address
 
             logging.info(
                 f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}'
             )
 
-            client_sock.send_all(f"{msg}\n".encode('utf-8'))
+            bet: Bet = deserialize(msg)
+
+            store_bets([bet])
+
+            logging.info(
+                f"action: apuesta_almacenada | result: success | dni: ${bet.document} | numero: ${bet.number}"
+            )
+
+            client_sock.send_all(serialize(bet))
+        except ValueError as e:
+            logging.error(
+                f"action: receive_message | result: fail | error: {str(e)}"
+            )
         except OSError as e:
             logging.error(
                 f"action: receive_message | result: fail | error: {str(e)}"
