@@ -54,7 +54,7 @@ func (s *Socket) ReadAll() ([]byte, error) {
 		}
 	}
 
-	return result, nil
+	return result[:len(result)-1], nil // Remove '\n'
 }
 
 // SendAll Sends all the data to the socket connection avoiding short writes
