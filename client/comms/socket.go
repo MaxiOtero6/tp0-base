@@ -4,11 +4,7 @@ import (
 	"bufio"
 	"io"
 	"net"
-
-	"github.com/op/go-logging"
 )
-
-var log = logging.MustGetLogger("log")
 
 // Socket Struct that encapsulates the socket connection
 type Socket struct {
@@ -58,18 +54,16 @@ func (s *Socket) ReadAll() ([]byte, error) {
 }
 
 // SendAll Sends all the data to the socket connection avoiding short writes
-func (s *Socket) SendAll(msg []byte) {
+func (s *Socket) SendAll(msg []byte) error {
 	for len(msg) > 0 {
 		n, err := s.conn.Write(msg)
 
 		if err != nil {
-			log.Criticalf(
-				"action: send_message | result: fail | error: %v",
-				err,
-			)
-			return
+			return err
 		}
 
 		msg = msg[n:]
 	}
+
+	return nil
 }

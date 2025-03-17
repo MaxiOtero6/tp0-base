@@ -76,7 +76,15 @@ func (c *Client) StartClientLoop() {
 				return
 			}
 
-			c.conn.SendAll(bet.Serialize())
+			err = c.conn.SendAll(bet.Serialize())
+
+			if err != nil {
+				log.Errorf("action: send_message | result: fail | client_id: %v | error: %v",
+					c.config.ID,
+					err,
+				)
+				return
+			}
 
 			msg, err := c.conn.ReadAll()
 			c.conn.Close()
