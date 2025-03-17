@@ -33,8 +33,8 @@ func NewBetResponse(data string) (*BetPacket, error) {
 		return nil, &deserializationError{Data: data}
 	}
 
-	agency_raw := strings.ReplaceAll(split[0], "'", "")
-	number_raw := strings.ReplaceAll(split[1], "'", "")
+	agency_raw := split[0]
+	number_raw := split[1]
 
 	agency, err := strconv.Atoi(agency_raw)
 	if err != nil {
@@ -57,12 +57,12 @@ func (p *BetPacket) Serialize() []byte {
 	header := "bet "
 
 	msg := header +
-		"'" + fmt.Sprint(p.Agency) + "' " +
-		"'" + p.FirstName + "' " +
-		"'" + p.LastName + "' " +
-		"'" + p.Document + "' " +
-		"'" + p.Birthdate + "' " +
-		"'" + fmt.Sprint(p.Number) + "'\n"
+		fmt.Sprint(p.Agency) + " " +
+		strings.ReplaceAll(p.FirstName, " ", "-") + " " +
+		strings.ReplaceAll(p.LastName, " ", "-") + " " +
+		p.Document + " " +
+		p.Birthdate + " " +
+		fmt.Sprint(p.Number) + "\n"
 
 	return []byte(msg)
 }
