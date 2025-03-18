@@ -62,10 +62,6 @@ func (c *Client) StartClientLoop() {
 		case <-c.done:
 			return
 		default:
-
-			// Create the connection the server in every loop iteration. Send an
-			c.createClientSocket()
-
 			bet, err := newBet()
 
 			if err != nil {
@@ -76,6 +72,9 @@ func (c *Client) StartClientLoop() {
 				return
 			}
 
+			// Create the connection the server in every loop iteration. Send an
+			c.createClientSocket()
+
 			err = c.conn.SendAll(bet.Serialize())
 
 			if err != nil {
@@ -83,6 +82,7 @@ func (c *Client) StartClientLoop() {
 					c.config.ID,
 					err,
 				)
+				c.conn.Close()
 				return
 			}
 
