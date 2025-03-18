@@ -1,5 +1,6 @@
 from common.utils import Bet
 
+
 class BetDeserializationError(ValueError):
     """
     Exception raised when a deserialization error occurs.
@@ -40,7 +41,7 @@ def deserialize(data: bytes) -> list[Bet]:
     if split.pop(0) != "bet":
         raise ValueError("Invalid message format, expected 'bet' keyword")
 
-    bets_raw: list[str] = split.pop(0).split("|")
+    bets_raw: list[str] = split.pop(0).split("&")
 
     try:
         return [__deserialize(i) for i in bets_raw]

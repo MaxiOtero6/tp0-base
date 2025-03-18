@@ -21,7 +21,7 @@ func SerializeBets(batch []BetPacket) []byte {
 
 	for idx, p := range batch {
 		if idx > 0 {
-			msg += "|"
+			msg += "&"
 		}
 
 		msg += fmt.Sprint(p.Agency) + " " +
