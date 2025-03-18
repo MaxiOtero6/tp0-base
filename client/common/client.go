@@ -130,10 +130,7 @@ func (c *Client) StartClientLoop(maxBatchAmount int) {
 				msg,
 			)
 
-			log.Infof("action: apuesta_enviada | result: success | dni: %v | numero: %v",
-				response.Document,
-				response.Number,
-			)
+			log.Infof("action: apuesta_enviada | result: %v | client_id: %v", response, c.config.ID)
 
 			// Wait a time between sending one message and the next one
 			time.Sleep(c.config.LoopPeriod)
