@@ -97,7 +97,7 @@ func handleSigterm(signalChan chan os.Signal, client *common.Client) {
 	client.Shutdown()
 
 	log.Infof("action: exit | result: success | signal: %v",
-	s.String(),
+		s.String(),
 	)
 }
 
@@ -119,14 +119,16 @@ func main() {
 
 	clientConfig := common.ClientConfig{
 		ServerAddress: v.GetString("server.address"),
-		ID:            v.GetString("id"),
+		ID:            v.GetInt("id"),
 		LoopAmount:    v.GetInt("loop.amount"),
 		LoopPeriod:    v.GetDuration("loop.period"),
 	}
 
 	client := common.NewClient(clientConfig)
-	
+
 	go handleSigterm(signalChan, client)
 
-	client.StartClientLoop()
+	maxBatchAmount := v.GetInt("batch.maxAmount")
+
+	client.StartClientLoop(maxBatchAmount)
 }

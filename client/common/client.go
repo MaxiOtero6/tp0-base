@@ -1,6 +1,7 @@
 package common
 
 import (
+	"io"
 	"time"
 
 	"github.com/7574-sistemas-distribuidos/docker-compose-init/client/comms"
@@ -12,7 +13,7 @@ var log = logging.MustGetLogger("log")
 
 // ClientConfig Configuration used by the client
 type ClientConfig struct {
-	ID            string
+	ID            int
 	ServerAddress string
 	LoopAmount    int
 	LoopPeriod    time.Duration
@@ -54,28 +55,42 @@ func (c *Client) createClientSocket() error {
 }
 
 // StartClientLoop Send messages to the client until some time threshold is met
-func (c *Client) StartClientLoop() {
+func (c *Client) StartClientLoop(maxBatchAmount int) {
+	parser, err := newParser(c.config.ID, maxBatchAmount)
+
+	if err != nil {
+		log.Criticalf("action: create_parser | result: fail | client_id: %v | error: %v",
+			c.config.ID,
+			err,
+		)
+	}
+
+	var fileErr error
+	var batch []packets.BetPacket
+
 	// There is an autoincremental msgID to identify every message sent
 	// Messages if the message amount threshold has not been surpassed
-	for msgID := 1; msgID <= c.config.LoopAmount; msgID++ {
+	for fileErr != io.EOF {
 		select {
 		case <-c.done:
+			parser.close()
 			return
 		default:
-			bet, err := newBet()
+			batch, fileErr = parser.newBets()
 
 			if err != nil {
 				log.Errorf("action: create_bet | result: fail | client_id: %v | error: %v",
 					c.config.ID,
 					err,
 				)
+				parser.close()
 				return
 			}
 
 			// Create the connection the server in every loop iteration. Send an
 			c.createClientSocket()
 
-			err = c.conn.SendAll(bet.Serialize())
+			err = c.conn.SendAll(packets.SerializeBets(batch))
 
 			if err != nil {
 				log.Errorf("action: send_message | result: fail | client_id: %v | error: %v",
@@ -83,6 +98,7 @@ func (c *Client) StartClientLoop() {
 					err,
 				)
 				c.conn.Close()
+				parser.close()
 				return
 			}
 
@@ -94,6 +110,7 @@ func (c *Client) StartClientLoop() {
 					c.config.ID,
 					err,
 				)
+				parser.close()
 				return
 			}
 
@@ -104,6 +121,7 @@ func (c *Client) StartClientLoop() {
 					c.config.ID,
 					err,
 				)
+				parser.close()
 				return
 			}
 
@@ -122,6 +140,7 @@ func (c *Client) StartClientLoop() {
 		}
 	}
 
+	parser.close()
 	log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
 }
 
