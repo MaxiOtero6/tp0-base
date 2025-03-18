@@ -33,6 +33,7 @@ CLIENT_SERVICE = """
       - server
     volumes:
       - ./client/config.yaml:/config.yaml
+      - ./.data:/data:ro
 """
 
 NETWORKS = """
