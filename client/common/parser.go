@@ -16,6 +16,7 @@ type Parser struct {
 	file           *os.File
 	maxBatchAmount int
 	agency         int
+	reader         *bufio.Reader
 }
 
 // newParser Initializes a new parser with the client id and the max batch amount
@@ -28,7 +29,9 @@ func newParser(clientId int, maxBatchAmount int) (*Parser, error) {
 		return nil, err
 	}
 
-	return &Parser{file: file, maxBatchAmount: maxBatchAmount, agency: clientId}, nil
+	reader := bufio.NewReader(file)
+
+	return &Parser{file: file, maxBatchAmount: maxBatchAmount, agency: clientId, reader: reader}, nil
 }
 
 // close Closes the file
@@ -40,13 +43,11 @@ func (p *Parser) close() {
 // until the max batch amount is reached or the file ends, each line is
 // expected to have the following format: <first-name>,<last-name>,<document>,<birthdate>,<number>
 func (p *Parser) newBets() ([]packets.BetPacket, error) {
-	reader := bufio.NewReader(p.file)
-
 	var batch []packets.BetPacket
 
 	for i := 0; i < p.maxBatchAmount; i++ {
-		line, err := reader.ReadString('\n')
-		line = strings.TrimSpace(line) // Remove '\r\n'
+		line, err := p.reader.ReadString('\n')
+		line = strings.TrimRight(line, "\r\t\n") // Remove '\r\n'
 
 		if err == io.EOF {
 			return batch, err
