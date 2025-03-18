@@ -36,7 +36,7 @@ func (p *Parser) close() {
 	p.file.Close()
 }
 
-// newBet Creates a new bet batch reading data from the agency csv file 
+// newBet Creates a new bet batch reading data from the agency csv file
 // until the max batch amount is reached or the file ends, each line is
 // expected to have the following format: <first-name>,<last-name>,<document>,<birthdate>,<number>
 func (p *Parser) newBets() ([]packets.BetPacket, error) {
@@ -46,7 +46,7 @@ func (p *Parser) newBets() ([]packets.BetPacket, error) {
 
 	for i := 0; i < p.maxBatchAmount; i++ {
 		line, err := reader.ReadString('\n')
-		line = line[:len(line)-2] // Remove '\r\n'
+		line = strings.TrimSpace(line) // Remove '\r\n'
 
 		if err == io.EOF {
 			return batch, err
