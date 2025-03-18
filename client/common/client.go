@@ -70,6 +70,7 @@ func (c *Client) StartClientLoop(maxBatchAmount int) {
 
 	// There is an autoincremental msgID to identify every message sent
 	// Messages if the message amount threshold has not been surpassed
+outer:
 	for fileErr != io.EOF {
 		select {
 		case <-c.done:
@@ -77,6 +78,10 @@ func (c *Client) StartClientLoop(maxBatchAmount int) {
 			return
 		default:
 			batch, fileErr = parser.newBets()
+
+			if len(batch) == 0 {
+				break outer
+			}
 
 			if err != nil {
 				log.Errorf("action: create_bet | result: fail | client_id: %v | error: %v",
