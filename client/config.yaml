@@ -1,10 +1,23 @@
 # id: 1
 server:
-  address: "server:12345"
+    address: "server:12345"
 loop:
-  amount: 5
-  period: "5s"
+    amount: 5
+    period: "5s"
 log:
-  level: "INFO"
+    level: "INFO"
 batch:
-  maxAmount: 10
+    maxAmount: 53
+# bytes p/bet:
+# 1 agency
+# 60 firstname
+# 60 lastname
+# 8 document
+# 10 birthdate
+# 4 number
+# 5 padding
+# total: 148 bytes
+
+# 8 kilobytes / 148 bytes = 54.05
+# maxAmount: 53
+# round to 53 including header (4 bytes) and & between bets (1 byte)
