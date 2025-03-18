@@ -1,14 +1,24 @@
 from common.utils import Bet
 
+class BetDeserializationError(ValueError):
+    """
+    Exception raised when a deserialization error occurs.
+    """
+    bets_len: int
 
-def deserialize(data: bytes) -> Bet:
+    def __init__(self, len: int):
+        self.bets_len = len
+        super().__init__("Invalid message format, expected 6 fields")
+
+
+def __deserialize(data: str) -> Bet:
     """
     Deserialize a Bet object from a byte string.
     """
-    split = data.decode("utf-8").split(" ")
+    split = data.split(" ")
 
-    if len(split) != 7 or split.pop(0) != "bet":
-        raise ValueError("Invalid message format")
+    if len(split) != 6:
+        raise ValueError()
 
     agency: str = split.pop(0)
     first_name: str = split.pop(0).replace("-", " ")
@@ -18,6 +28,24 @@ def deserialize(data: bytes) -> Bet:
     number: str = split.pop(0)
 
     return Bet(agency, first_name, last_name, document, birthday, number)
+
+
+def deserialize(data: bytes) -> list[Bet]:
+    """
+    Deserialize a list of Bet objects from a byte string.
+    """
+
+    split = data.decode("utf-8").split(" ", maxsplit=1)
+
+    if split.pop(0) != "bet":
+        raise ValueError("Invalid message format, expected 'bet' keyword")
+
+    bets_raw: list[str] = split.pop(0).split("|")
+
+    try:
+        return [__deserialize(i) for i in bets_raw]
+    except ValueError as e:
+        raise BetDeserializationError(len(bets_raw)) from e
 
 
 def serialize(bet: Bet) -> bytes:
