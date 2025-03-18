@@ -65,6 +65,8 @@ func (c *Client) StartClientLoop(maxBatchAmount int) {
 		)
 	}
 
+	defer parser.close()
+
 	var fileErr error
 	var batch []packets.BetPacket
 
@@ -74,7 +76,6 @@ outer:
 	for fileErr != io.EOF {
 		select {
 		case <-c.done:
-			parser.close()
 			return
 		default:
 			batch, fileErr = parser.newBets()
@@ -88,7 +89,6 @@ outer:
 					c.config.ID,
 					err,
 				)
-				parser.close()
 				return
 			}
 
@@ -103,7 +103,6 @@ outer:
 					err,
 				)
 				c.conn.Close()
-				parser.close()
 				return
 			}
 
@@ -115,7 +114,6 @@ outer:
 					c.config.ID,
 					err,
 				)
-				parser.close()
 				return
 			}
 
@@ -126,7 +124,6 @@ outer:
 					c.config.ID,
 					err,
 				)
-				parser.close()
 				return
 			}
 
@@ -142,7 +139,6 @@ outer:
 		}
 	}
 
-	parser.close()
 	log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
 }
 
