@@ -21,7 +21,7 @@ func (e *unknownPacket) Error() string {
 }
 
 // Deserialize Deserializes a message into a packet struct
-func Deserialize(msg []byte) (*BetPacket, error) {
+func Deserialize(msg []byte) (string, error) {
 	data := string(msg)
 
 	split := strings.SplitN(data, " ", 2)
@@ -30,8 +30,8 @@ func Deserialize(msg []byte) (*BetPacket, error) {
 
 	switch packetType {
 	case Bet:
-		return NewBetResponse(split[1])
+		return split[1], nil
 	default:
-		return nil, &unknownPacket{Header: packetType}
+		return "", &unknownPacket{Header: packetType}
 	}
 }
