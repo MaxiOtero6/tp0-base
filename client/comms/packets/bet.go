@@ -47,17 +47,23 @@ func NewBetResponse(data string) (*BetPacket, error) {
 	}, nil
 }
 
-// Serialize Serializes a BetPacket into a byte array
-func (p *BetPacket) Serialize() []byte {
-	header := "bet "
+// SerializeBets Serializes BetPackets into a byte array
+func SerializeBets(batch []BetPacket) []byte {
+	msg := "bet "
 
-	msg := header +
-		fmt.Sprint(p.Agency) + " " +
-		strings.ReplaceAll(p.FirstName, " ", "-") + " " +
-		strings.ReplaceAll(p.LastName, " ", "-") + " " +
-		p.Document + " " +
-		p.Birthdate + " " +
-		fmt.Sprint(p.Number) + "\n"
+	for idx, p := range batch {
+		if idx > 0 {
+			msg += "|"
+		}
 
+		msg += fmt.Sprint(p.Agency) + " " +
+			strings.ReplaceAll(p.FirstName, " ", "-") + " " +
+			strings.ReplaceAll(p.LastName, " ", "-") + " " +
+			p.Document + " " +
+			p.Birthdate + " " +
+			fmt.Sprint(p.Number)
+	}
+
+	msg += "\n"
 	return []byte(msg)
 }
