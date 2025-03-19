@@ -54,8 +54,10 @@ func (c *Client) createClientSocket() error {
 	return nil
 }
 
-// StartClientLoop Send messages to the client until some time threshold is met
-func (c *Client) StartClientLoop(maxBatchAmount int) {
+// SendAllBets Send bets to the server until all bets are sent
+// or the file ends. The client will wait a time between sending
+// one message and the next one
+func (c *Client) SendAllBets(maxBatchAmount int) {
 	parser, err := newParser(c.config.ID, maxBatchAmount)
 
 	if err != nil {
@@ -70,8 +72,6 @@ func (c *Client) StartClientLoop(maxBatchAmount int) {
 	var fileErr error
 	var batch []packets.BetPacket
 
-	// There is an autoincremental msgID to identify every message sent
-	// Messages if the message amount threshold has not been surpassed
 outer:
 	for fileErr != io.EOF {
 		select {
@@ -92,7 +92,8 @@ outer:
 				return
 			}
 
-			// Create the connection the server in every loop iteration. Send an
+			// Create the connection the server in every loop iteration. Send an array of bets
+			// and wait for the response
 			c.createClientSocket()
 
 			err = c.conn.SendAll(packets.SerializeBets(batch))
