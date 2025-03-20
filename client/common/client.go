@@ -37,7 +37,7 @@ func NewClient(config ClientConfig) *Client {
 }
 
 // CreateClientSocket Initializes client socket. In case of
-// failure, error is printed in stdout/stderr and exit 1
+// failure, error is printed in stdout/stderr and
 // is returned
 func (c *Client) createClientSocket() error {
 	conn, err := comms.NewSocket(c.config.ServerAddress)
@@ -48,6 +48,7 @@ func (c *Client) createClientSocket() error {
 			c.config.ID,
 			err,
 		)
+		return err
 	}
 
 	c.conn = conn
