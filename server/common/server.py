@@ -1,8 +1,8 @@
 import signal
 import logging
 from comms.socket import Socket
-from common.utils import Bet, store_bets
-from comms.packet import BetDeserializationError, deserialize, serialize
+from common.utils import Bet, has_won, load_bets, store_bets
+from comms.packet import BetDeserializationError, deserialize_bets, deserialize_header
 
 
 class Server:
@@ -13,6 +13,8 @@ class Server:
         )
 
         self._running = False
+        self._agencies_ready_to_draw: set = set()
+        self._bet_winners_by_agency: dict[int, list[Bet]] = dict()
 
         signal.signal(signal.SIGTERM, self.__shutdown)
 
@@ -68,6 +70,22 @@ class Server:
 
             fail_msg: bytes = "bet fail\n".encode("utf-8")
             client_sock.send_all(fail_msg)
+
+    def __draw_bets(self) -> None:
+        """
+        Draw bets and store winners by agency
+        """
+        bets: list[Bet] = load_bets()
+        winners: list[Bet] = [bet for bet in bets if has_won(bet)]
+
+        for agency_id in self._agencies_ready_to_draw:
+            self._bet_winners_by_agency[agency_id] = [
+                bet for bet in winners if bet.agency == agency_id
+            ]
+
+        self._agencies_ready_to_draw.clear()
+        logging.info("action: sorteo | result: success")
+
         except ValueError as e:
             logging.error(
                 f"action: receive_message | result: fail | error: {str(e)}"
