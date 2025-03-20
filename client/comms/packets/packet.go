@@ -42,3 +42,15 @@ func Deserialize(msg []byte) (string, error) {
 		return "", &unknownPacket{Header: packetType}
 	}
 }
+
+// GetDrawResults Returns the draw results from a message
+// in case of error returns nil
+func GetDrawResults(data string) []string {
+	split := strings.SplitN(data, " ", 2)
+
+	if split[0] == "fail" {
+		return nil
+	}
+
+	return strings.Split(split[1], "&")
+}
