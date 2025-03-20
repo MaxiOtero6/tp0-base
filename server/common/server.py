@@ -59,23 +59,26 @@ class Server:
                 f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}'
             )
 
-            bet_batch: list[Bet] = deserialize(msg)
-            store_bets(bet_batch)
+            header, body = deserialize_header(msg)
 
-            logging.info(
-                f"action: apuesta_recibida | result: success | cantidad: {len(bet_batch)}"
-            )
+            if header == "bet":
+                self.__handle_bet(client_sock, body)
+            elif header == "betdraw":
+                self.__handle_draw(client_sock, body)
+            elif header == "betdrawresults":
+                self.__handle_bet_results(client_sock, body)
+            else:
+                logging.error(
+                    f"action: receive_message | result: fail | error: invalid header"
+                )
 
-            success_msg: bytes = "bet success\n".encode("utf-8")
-            client_sock.send_all(success_msg)
-        except BetDeserializationError as e:
+        except (ValueError, OSError) as e:
             logging.error(
-                f"action: apuesta_recibida | result: fail | cantidad: {e.bets_len}"
+                f"action: receive_message | result: fail | error: {str(e)}"
             )
-
-            fail_msg: bytes = "bet fail\n".encode("utf-8")
-            client_sock.send_all(fail_msg)
-
+        finally:
+            client_sock.close()
+            
     def __draw_bets(self) -> None:
         """
         Draw bets and store winners by agency
