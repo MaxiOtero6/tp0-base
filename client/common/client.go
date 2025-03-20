@@ -82,6 +82,38 @@ func (c *Client) NotifyAllBetsSent() (ret bool) {
 	}
 }
 
+// RequestDrawResults Requests the draw results to the server
+// until the server responds with the results or an error occurs
+func (c *Client) RequestDrawResults() {
+	var winners []string
+
+	select {
+	case <-c.done:
+		return
+	default:
+		for winners == nil {
+			msgToSend := []byte(fmt.Sprintf("betdrawresults %v\n", c.config.ID))
+			response, err := c.stopAndWait(msgToSend)
+
+			if err != nil {
+				return
+			}
+
+			results := packets.GetDrawResults(response)
+
+			if results == nil {
+				log.Infof("action: consulta_ganadores | result: fail")
+				// Wait a time between sending one message and the next one
+				time.Sleep(c.config.LoopPeriod)
+				continue
+			}
+
+			winners = results
+		}
+
+		log.Infof("action: consulta_ganadores | result: success | cant_ganadores: %v", len(winners))
+	}
+}
 
 // stopAndWait Sends a message to the server and waits for the response
 // to return it. In case of error, it is returned
