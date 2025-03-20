@@ -120,7 +120,6 @@ func (c *Client) RequestDrawResults() {
 			results := packets.GetDrawResults(response)
 
 			if results == nil {
-				log.Infof("action: consulta_ganadores | result: fail")
 				// Wait a time between sending one message and the next one
 				time.Sleep(c.config.LoopPeriod)
 				continue

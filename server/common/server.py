@@ -78,7 +78,7 @@ class Server:
             )
         finally:
             client_sock.close()
-            
+
     def __draw_bets(self) -> None:
         """
         Draw bets and store winners by agency
@@ -116,7 +116,7 @@ class Server:
 
             fail_msg: bytes = "bet fail\n".encode("utf-8")
             client_sock.send_all(fail_msg)
-            
+
     def __handle_draw(self, client_sock: Socket, msg: str) -> None:
         """
         Confirm the draw of a specific agency
@@ -152,9 +152,8 @@ class Server:
             agency_id: int = int(msg)
 
             winners: list[Bet] = self._bet_winners_by_agency.pop(agency_id)
-            print(winners)
             winners_documents: str = "&".join([i.document for i in winners])
-            print(winners_documents)
+
             winners_msg: bytes = f"betdrawresults success {winners_documents}\n".encode(
                 "utf-8")
 
@@ -164,10 +163,6 @@ class Server:
 
             client_sock.send_all(winners_msg)
         except (ValueError, KeyError) as e:
-            logging.error(
-                f"action: resultados_apuestas | result: fail"
-            )
-
             fail_msg: bytes = "betdrawresults fail\n".encode("utf-8")
             client_sock.send_all(fail_msg)
 
