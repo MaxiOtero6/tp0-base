@@ -57,8 +57,8 @@ func (c *Client) createClientSocket() error {
 
 // SendAllBets Send bets to the server until all bets are sent
 // or the file ends. The client will wait a time between sending
-// one message and the next one
-func (c *Client) SendAllBets(maxBatchAmount int) {
+// one message and the next one. If an error occurs, it is returned
+func (c *Client) SendAllBets(maxBatchAmount int) (ret bool) {
 	parser, err := newParser(c.config.ID, maxBatchAmount)
 
 	if err != nil {
@@ -131,7 +131,7 @@ outer:
 
 			log.Infof("action: receive_message | result: success | client_id: %v | msg: %v",
 				c.config.ID,
-				msg,
+				response,
 			)
 
 			log.Infof("action: apuesta_enviada | result: %v | client_id: %v", response, c.config.ID)
@@ -141,7 +141,10 @@ outer:
 		}
 	}
 
+	ret = true
+
 	log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
+	return
 }
 
 // Shutdown Closes the client connection and sends a signal
