@@ -241,6 +241,6 @@ outer:
 // Shutdown Closes the client connection and sends a signal
 // to the client to finish its execution gracefully
 func (c *Client) Shutdown() {
-	c.done <- true
+	close(c.done)
 	c.conn.Close()
 }
