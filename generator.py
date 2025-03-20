@@ -7,6 +7,7 @@ SERVER_SERVICE = """
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - CLIENTS_AMOUNT=clients_amount
     #   - LOGGING_LEVEL=DEBUG
     networks:
       - testing_net
@@ -52,7 +53,9 @@ def save(file: str, data: str) -> None:
 
 
 def run(file: str, n_clients: int) -> None:
-    data: str = "name: tp0\nservices:\n" + SERVER_SERVICE
+    data: str = "name: tp0\nservices:\n"
+    
+    data += SERVER_SERVICE.replace("clients_amount", str(n_clients))
 
     for i in range(n_clients):
         data += CLIENT_SERVICE \
