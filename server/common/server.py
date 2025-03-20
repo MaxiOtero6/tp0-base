@@ -94,6 +94,29 @@ class Server:
         self._agencies_ready_to_draw.clear()
         logging.info("action: sorteo | result: success")
 
+    def __handle_bet(self, client_sock: Socket, msg: str) -> None:
+        """
+        Store the bets received from the client
+        If the bets are not correctly deserialized, a fail message is sent
+        """
+        try:
+            bet_batch: list[Bet] = deserialize_bets(msg)
+            store_bets(bet_batch)
+
+            logging.info(
+                f"action: apuesta_recibida | result: success | cantidad: {len(bet_batch)}"
+            )
+
+            success_msg: bytes = "bet success\n".encode("utf-8")
+            client_sock.send_all(success_msg)
+        except BetDeserializationError as e:
+            logging.error(
+                f"action: apuesta_recibida | result: fail | cantidad: {e.bets_len}"
+            )
+
+            fail_msg: bytes = "bet fail\n".encode("utf-8")
+            client_sock.send_all(fail_msg)
+            
         except ValueError as e:
             logging.error(
                 f"action: receive_message | result: fail | error: {str(e)}"
