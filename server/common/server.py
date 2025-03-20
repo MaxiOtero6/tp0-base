@@ -117,16 +117,59 @@ class Server:
             fail_msg: bytes = "bet fail\n".encode("utf-8")
             client_sock.send_all(fail_msg)
             
+    def __handle_draw(self, client_sock: Socket, msg: str) -> None:
+        """
+        Confirm the draw of a specific agency
+        If the agency id is not a number, a fail message is sent
+        """
+        try:
+            client_id: int = int(msg)
+
+            self._agencies_ready_to_draw.add(client_id)
+
+            logging.info(
+                f"action: confirmacion_sorteo | result: success | id: {client_id}"
+            )
+
+            success_msg: bytes = "betdraw success\n".encode("utf-8")
+            client_sock.send_all(success_msg)
         except ValueError as e:
             logging.error(
-                f"action: receive_message | result: fail | error: {str(e)}"
+                f"action: confirmacion_sorteo | result: fail"
             )
-        except OSError as e:
+
+            fail_msg: bytes = "betdraw fail\n".encode("utf-8")
+            client_sock.send_all(fail_msg)
+
+    def __handle_bet_results(self, client_sock: Socket, msg: str) -> None:
+        """
+        Send the results of the bet draw to the client
+        If the agency id is not found because it has not drawn yet, a fail message is sent
+        If the agency id is not found because it has already been sent, a fail message is sent
+        If the agency id is not a number, a fail message is sent
+        """
+        try:
+            agency_id: int = int(msg)
+
+            winners: list[Bet] = self._bet_winners_by_agency.pop(agency_id)
+            print(winners)
+            winners_documents: str = "&".join([i.document for i in winners])
+            print(winners_documents)
+            winners_msg: bytes = f"betdrawresults success {winners_documents}\n".encode(
+                "utf-8")
+
+            logging.info(
+                f"action: resultados_apuestas | result: success | id: {agency_id} | cantidad: {len(winners)}"
+            )
+
+            client_sock.send_all(winners_msg)
+        except (ValueError, KeyError) as e:
             logging.error(
-                f"action: receive_message | result: fail | error: {str(e)}"
+                f"action: resultados_apuestas | result: fail"
             )
-        finally:
-            client_sock.close()
+
+            fail_msg: bytes = "betdrawresults fail\n".encode("utf-8")
+            client_sock.send_all(fail_msg)
 
     def __accept_new_connection(self) -> Socket:
         """
