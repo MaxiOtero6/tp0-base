@@ -31,17 +31,23 @@ def __deserialize(data: str) -> Bet:
     return Bet(agency, first_name, last_name, document, birthday, number)
 
 
-def deserialize(data: bytes) -> list[Bet]:
+def deserialize_header(data: bytes) -> tuple[str, str]:
+    """
+    Deserialize the header of a message from a byte string.
+    """
+    split: list[str] = data.decode("utf-8").split(" ", maxsplit=1)
+
+    if len(split) != 2:
+        raise ValueError("Invalid message format, expected message value")
+
+    return split[0], split[1]
+
+
+def deserialize_bets(data: str) -> list[Bet]:
     """
     Deserialize a list of Bet objects from a byte string.
     """
-
-    split = data.decode("utf-8").split(" ", maxsplit=1)
-
-    if split.pop(0) != "bet":
-        raise ValueError("Invalid message format, expected 'bet' keyword")
-
-    bets_raw: list[str] = split.pop(0).split("&")
+    bets_raw: list[str] = data.split("&")
 
     try:
         return [__deserialize(i) for i in bets_raw]
