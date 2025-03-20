@@ -33,11 +33,11 @@ class Server:
 
         while self._running:
             try:
-                if len(self._agencies_ready_to_draw) == clients_amount:
-                    self.__draw_bets()
-
                 client_sock = self.__accept_new_connection()
                 self.__handle_client_connection(client_sock)
+                
+                if len(self._agencies_ready_to_draw) == clients_amount:
+                    self.__draw_bets()
 
             except OSError as e:
                 if self._running:
