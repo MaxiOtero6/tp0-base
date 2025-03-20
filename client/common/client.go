@@ -55,6 +55,50 @@ func (c *Client) createClientSocket() error {
 	return nil
 }
 
+// stopAndWait Sends a message to the server and waits for the response
+// to return it. In case of error, it is returned
+func (c *Client) stopAndWait(msgToSend []byte) (response string, err error) {
+	err = c.createClientSocket()
+
+	if err != nil {
+		return
+	}
+
+	err = c.conn.SendAll(msgToSend)
+
+	if err != nil {
+		log.Errorf("action: send_message | result: fail | client_id: %v | error: %v",
+			c.config.ID,
+			err,
+		)
+		c.conn.Close()
+		return
+	}
+
+	msgRecv, err := c.conn.ReadAll()
+	c.conn.Close()
+
+	if err != nil {
+		log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
+			c.config.ID,
+			err,
+		)
+		return
+	}
+
+	response, err = packets.Deserialize(msgRecv)
+
+	if err != nil {
+		log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
+			c.config.ID,
+			err,
+		)
+		return
+	}
+
+	return
+}
+
 // SendAllBets Send bets to the server until all bets are sent
 // or the file ends. The client will wait a time between sending
 // one message and the next one. If an error occurs, it is returned
@@ -93,39 +137,9 @@ outer:
 				return
 			}
 
-			// Create the connection the server in every loop iteration. Send an array of bets
-			// and wait for the response
-			c.createClientSocket()
-
-			err = c.conn.SendAll(packets.SerializeBets(batch))
+			response, err := c.stopAndWait(packets.SerializeBets(batch))
 
 			if err != nil {
-				log.Errorf("action: send_message | result: fail | client_id: %v | error: %v",
-					c.config.ID,
-					err,
-				)
-				c.conn.Close()
-				return
-			}
-
-			msg, err := c.conn.ReadAll()
-			c.conn.Close()
-
-			if err != nil {
-				log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
-					c.config.ID,
-					err,
-				)
-				return
-			}
-
-			response, err := packets.Deserialize(msg)
-
-			if err != nil {
-				log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
-					c.config.ID,
-					err,
-				)
 				return
 			}
 
