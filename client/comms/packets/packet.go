@@ -52,5 +52,9 @@ func GetDrawResults(data string) []string {
 		return nil
 	}
 
+	if len(split[1]) == 0 {
+		return []string{}
+	}
+
 	return strings.Split(split[1], "&")
 }
