@@ -18,19 +18,24 @@ class Server:
 
         signal.signal(signal.SIGTERM, self.__shutdown)
 
-    def run(self) -> None:
+    def run(self, clients_amount: int) -> None:
         """
         Dummy Server loop
 
         Server that accept a new connections and establishes a
         communication with a client. After client with communucation
-        finishes, servers starts to accept new connections again
+        finishes, servers starts to accept new connections again.
+        If {clients_amount} clients have notified that they are ready to draw
+        the server will draw the bets and store the winners by agency
         """
 
         self._running = True
 
         while self._running:
             try:
+                if len(self._agencies_ready_to_draw) == clients_amount:
+                    self.__draw_bets()
+
                 client_sock = self.__accept_new_connection()
                 self.__handle_client_connection(client_sock)
 
