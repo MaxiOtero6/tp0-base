@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"io"
 	"time"
 
@@ -54,6 +55,33 @@ func (c *Client) createClientSocket() error {
 	c.conn = conn
 	return nil
 }
+
+// NotifyAllBetsSent Notifies the server that all bets have been sent
+func (c *Client) NotifyAllBetsSent() (ret bool) {
+	select {
+	case <-c.done:
+		return
+	default:
+		msgToSend := []byte(fmt.Sprintf("betdraw %v\n", c.config.ID))
+
+		response, err := c.stopAndWait(msgToSend)
+
+		if err != nil {
+			return
+		}
+
+		if response == "fail" {
+			log.Errorf("action: notificar_sorteo | result: fail | client_id: %v", c.config.ID)
+			return
+		}
+
+		log.Infof("action: notificar_sorteo | result: success | client_id: %v", c.config.ID)
+
+		ret = true
+		return
+	}
+}
+
 
 // stopAndWait Sends a message to the server and waits for the response
 // to return it. In case of error, it is returned
