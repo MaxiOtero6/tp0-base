@@ -126,6 +126,6 @@ func (c *Client) StartClientLoop() {
 }
 
 func (c *Client) Shutdown() {
-	c.done <- true
+	close(c.done)
 	c.conn.Close()
 }
