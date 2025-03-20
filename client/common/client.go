@@ -144,6 +144,8 @@ outer:
 	log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
 }
 
+// Shutdown Closes the client connection and sends a signal
+// to the client to finish its execution gracefully
 func (c *Client) Shutdown() {
 	c.done <- true
 	c.conn.Close()
