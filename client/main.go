@@ -130,5 +130,5 @@ func main() {
 
 	maxBatchAmount := v.GetInt("batch.maxAmount")
 
-	client.SendAllBets(maxBatchAmount)
+	client.Run(maxBatchAmount)
 }

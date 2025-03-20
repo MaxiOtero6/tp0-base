@@ -56,6 +56,24 @@ func (c *Client) createClientSocket() error {
 	return nil
 }
 
+// Run Starts the client. It sends all bets to the server
+// and then waits for the draw results
+func (c *Client) Run(maxBatchAmount int) {
+	ret := c.SendAllBets(maxBatchAmount)
+
+	if !ret {
+		return
+	}
+
+	ret = c.NotifyAllBetsSent()
+
+	if !ret {
+		return
+	}
+
+	c.RequestDrawResults()
+}
+
 // NotifyAllBetsSent Notifies the server that all bets have been sent
 func (c *Client) NotifyAllBetsSent() (ret bool) {
 	select {
