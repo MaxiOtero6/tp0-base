@@ -59,6 +59,13 @@ func (c *Client) createClientSocket() error {
 // Run Starts the client. It sends all bets to the server
 // and then waits for the draw results
 func (c *Client) Run(maxBatchAmount int) {
+	err := c.createClientSocket()
+	defer c.conn.Close()
+
+	if err != nil {
+		return
+	}
+
 	ret := c.SendAllBets(maxBatchAmount)
 
 	if !ret {
@@ -71,7 +78,13 @@ func (c *Client) Run(maxBatchAmount int) {
 		return
 	}
 
-	c.RequestDrawResults()
+	ret = c.RequestDrawResults()
+
+	if !ret {
+		return
+	}
+
+	c.shutdownConnection()
 }
 
 // NotifyAllBetsSent Notifies the server that all bets have been sent
@@ -102,7 +115,7 @@ func (c *Client) NotifyAllBetsSent() (ret bool) {
 
 // RequestDrawResults Requests the draw results to the server
 // until the server responds with the results or an error occurs
-func (c *Client) RequestDrawResults() {
+func (c *Client) RequestDrawResults() (ret bool) {
 	var winners []string
 
 	select {
@@ -130,17 +143,14 @@ func (c *Client) RequestDrawResults() {
 
 		log.Infof("action: consulta_ganadores | result: success | cant_ganadores: %v", len(winners))
 	}
+
+	ret = true
+	return
 }
 
 // stopAndWait Sends a message to the server and waits for the response
 // to return it. In case of error, it is returned
 func (c *Client) stopAndWait(msgToSend []byte) (response string, err error) {
-	err = c.createClientSocket()
-
-	if err != nil {
-		return
-	}
-
 	err = c.conn.SendAll(msgToSend)
 
 	if err != nil {
@@ -148,12 +158,10 @@ func (c *Client) stopAndWait(msgToSend []byte) (response string, err error) {
 			c.config.ID,
 			err,
 		)
-		c.conn.Close()
 		return
 	}
 
 	msgRecv, err := c.conn.ReadAll()
-	c.conn.Close()
 
 	if err != nil {
 		log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
@@ -174,6 +182,25 @@ func (c *Client) stopAndWait(msgToSend []byte) (response string, err error) {
 	}
 
 	return
+}
+
+// shutdownConnection Sends a message to the server to close the connection
+// and waits for the response.
+func (c *Client) shutdownConnection() {
+	select {
+	case <-c.done:
+		return
+	default:
+		msg := []byte(fmt.Sprintf("%v success\n", packets.ShutdownConnection))
+		_, err := c.stopAndWait(msg)
+
+		if err != nil {
+			log.Errorf("action: cerrar_conexion | result: fail | client_id: %v", c.config.ID)
+			return
+		}
+
+		log.Infof("action: cerrar_conexion | result: success | client_id: %v", c.config.ID)
+	}
 }
 
 // SendAllBets Send bets to the server until all bets are sent

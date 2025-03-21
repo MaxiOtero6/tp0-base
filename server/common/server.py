@@ -53,25 +53,30 @@ class Server:
         client socket will also be closed
         """
         try:
-            msg: bytes = client_sock.recv_all()
-            addr: tuple[str, int] = client_sock.address
+            running: bool = True
+            while running:
+                msg: bytes = client_sock.recv_all()
+                addr: tuple[str, int] = client_sock.address
 
-            logging.info(
-                f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}'
-            )
-
-            header, body = deserialize_header(msg)
-
-            if header == "bet":
-                self.__handle_bet(client_sock, body)
-            elif header == "betdraw":
-                self.__handle_draw(client_sock, body)
-            elif header == "betdrawresults":
-                self.__handle_bet_results(client_sock, body)
-            else:
-                logging.error(
-                    f"action: receive_message | result: fail | error: invalid header"
+                logging.info(
+                    f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}'
                 )
+
+                header, body = deserialize_header(msg)
+
+                if header == "bet":
+                    self.__handle_bet(client_sock, body)
+                elif header == "betdraw":
+                    self.__handle_draw(client_sock, body)
+                elif header == "betdrawresults":
+                    self.__handle_bet_results(client_sock, body)
+                elif header == "shutdown-connection":
+                    self.__handle_shutdown(client_sock, addr[0])
+                    running = False
+                else:
+                    logging.error(
+                        f"action: receive_message | result: fail | error: invalid header"
+                    )
 
         except (ValueError, OSError) as e:
             logging.error(
@@ -79,6 +84,13 @@ class Server:
             )
         finally:
             client_sock.close()
+
+    def __handle_shutdown(self, client_sock: Socket, ip: str) -> None:
+        """
+        Send a shutdown ack to the client
+        """
+        client_sock.send_all("shutdown-connection success\n".encode("utf-8"))
+        logging.info(f"action: cerrar_conexion | result: success | ip: {ip}")
 
     def __handle_bet(self, client_sock: Socket, msg: str) -> None:
         """

@@ -8,9 +8,10 @@ type PacketType string
 
 // Packet types enum
 const (
-	Bet         PacketType = "bet"
-	BetDraw     PacketType = "betdraw"
-	DrawResults PacketType = "betdrawresults"
+	Bet                PacketType = "bet"
+	BetDraw            PacketType = "betdraw"
+	DrawResults        PacketType = "betdrawresults"
+	ShutdownConnection PacketType = "shutdown-connection"
 )
 
 // Error returned when an unknown packet is received
@@ -37,6 +38,8 @@ func Deserialize(msg []byte) (string, error) {
 	case BetDraw:
 		return split[1], nil
 	case DrawResults:
+		return split[1], nil
+	case ShutdownConnection:
 		return split[1], nil
 	default:
 		return "", &unknownPacket{Header: packetType}
