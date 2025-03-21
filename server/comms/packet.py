@@ -53,10 +53,3 @@ def deserialize_bets(data: str) -> list[Bet]:
         return [__deserialize(i) for i in bets_raw]
     except ValueError as e:
         raise BetDeserializationError(len(bets_raw)) from e
-
-
-def serialize(bet: Bet) -> bytes:
-    """
-    Serialize a Bet object to a byte string.
-    """
-    return f"bet {bet.document} {bet.number}\n".encode("utf-8")
