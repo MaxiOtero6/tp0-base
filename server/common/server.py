@@ -1,5 +1,6 @@
 import signal
 import logging
+from threading import Thread
 from comms.socket import Socket
 from common.utils import Bet, has_won, load_bets, store_bets
 from comms.packet import BetDeserializationError, deserialize_bets, deserialize_header
@@ -13,6 +14,8 @@ class Server:
             address=('', port), listen_backlog=listen_backlog
         )
 
+        self.__clients: list[tuple[Socket, Thread]] = []
+
         self.__bet_monitor: BetMonitor = BetMonitor(clients_amount)
         self._running = False
 
@@ -20,21 +23,22 @@ class Server:
 
     def run(self) -> None:
         """
-        Dummy Server loop
-
-        Server that accept a new connections and establishes a
-        communication with a client. After client with communucation
-        finishes, servers starts to accept new connections again.
-        If {clients_amount} clients have notified that they are ready to draw
-        the server will draw the bets and store the winners by agency
+        Server accepts multiple new connections and starts a new thread for each one
         """
 
         self._running = True
 
         while self._running:
             try:
-                client_sock = self.__accept_new_connection()
-                self.__handle_client_connection(client_sock)
+                client_sock: Socket = self.__accept_new_connection()
+                client_thread: Thread = Thread(
+                    target=self.__handle_client_connection, args=(client_sock,)
+                )
+
+                self.__reap_clients()
+
+                self.__clients.append((client_sock, client_thread))
+                client_thread.start()
 
             except OSError as e:
                 if self._running:
@@ -165,6 +169,39 @@ class Server:
         logging.info('action: accept_connections | result: in_progress')
         return self._server_socket.accept()
 
+    def __reap_clients(self) -> None:
+        """
+        Reap clients
+
+        Function that checks if any of the clients have finished their
+        communication and removes them from the list
+        """
+
+        def _client_is_alive(client_socket: Socket, client_thread: Thread) -> bool:
+            if client_thread.is_alive():
+                return True
+
+            client_socket.close()
+            client_thread.join()
+            return False
+
+        self.__clients = [
+            (client_sock, client_thread)
+            for client_sock, client_thread in self.__clients
+            if _client_is_alive(client_sock, client_thread)
+        ]
+
+    def __shutdown_clients(self) -> None:
+        """
+        Shutdown all clients
+
+        Function that closes all the client sockets and stops all the client threads
+        """
+
+        for client_sock, client_thread in self.__clients:
+            client_sock.close()
+            client_thread.join()
+
     def __shutdown(self, signum, frame):
         """
         Shutdown server
@@ -174,6 +211,7 @@ class Server:
         """
         self._running = False
         self._server_socket.close()
+        self.__shutdown_clients()
         self.__bet_monitor.shutdown()
 
         signal_name: str = signal.Signals(signum).name
