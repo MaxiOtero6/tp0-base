@@ -7,6 +7,8 @@ import (
 
 type PacketType string
 
+const FAIL_RESULT = "fail"
+
 // Packet types enum
 const (
 	Bet         PacketType = "bet"
@@ -53,7 +55,7 @@ func Deserialize(msg []byte) (string, error) {
 func GetDrawResults(data string) []string {
 	split := strings.SplitN(data, " ", 2)
 
-	if split[0] == "fail" {
+	if split[0] == FAIL_RESULT {
 		return nil
 	}
 
