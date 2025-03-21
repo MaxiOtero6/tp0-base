@@ -1,6 +1,7 @@
 package packets
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -28,6 +29,10 @@ func Deserialize(msg []byte) (string, error) {
 	data := string(msg)
 
 	split := strings.SplitN(data, " ", 2)
+
+	if len(split) != 2 {
+		return "", fmt.Errorf("invalid message: %v", data)
+	}
 
 	packetType := PacketType(split[0])
 
