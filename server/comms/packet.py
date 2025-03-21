@@ -1,4 +1,15 @@
+from enum import Enum
 from common.utils import Bet
+
+
+class PacketHeader(Enum):
+    """
+    Enum class for packet headers.
+    """
+    BET = "bet"
+    BETDRAW = "betdraw"
+    DRAWRESULTS = "betdrawresults"
+    SHUTDOWN_CONNECTION = "shutdown-connection"
 
 
 class BetDeserializationError(ValueError):
