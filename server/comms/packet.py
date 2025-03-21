@@ -1,5 +1,7 @@
 from common.utils import Bet
 
+BET_HEADER = "bet"
+
 
 class BetDeserializationError(ValueError):
     """
@@ -38,8 +40,10 @@ def deserialize(data: bytes) -> list[Bet]:
 
     split = data.decode("utf-8").split(" ", maxsplit=1)
 
-    if split.pop(0) != "bet":
-        raise ValueError("Invalid message format, expected 'bet' keyword")
+    if split.pop(0) != BET_HEADER:
+        raise ValueError(
+            f"Invalid message format, expected '{BET_HEADER}' keyword"
+        )
 
     bets_raw: list[str] = split.pop(0).split("&")
 

@@ -2,7 +2,7 @@ import signal
 import logging
 from comms.socket import Socket
 from common.utils import Bet, store_bets
-from comms.packet import BetDeserializationError, deserialize, serialize
+from comms.packet import BetDeserializationError, deserialize, BET_HEADER
 
 
 class Server:
@@ -59,14 +59,14 @@ class Server:
                 f"action: apuesta_recibida | result: success | cantidad: {len(bet_batch)}"
             )
 
-            success_msg: bytes = "bet success\n".encode("utf-8")
+            success_msg: bytes = f"{BET_HEADER} success\n".encode("utf-8")
             client_sock.send_all(success_msg)
         except BetDeserializationError as e:
             logging.error(
                 f"action: apuesta_recibida | result: fail | cantidad: {e.bets_len}"
             )
 
-            fail_msg: bytes = "bet fail\n".encode("utf-8")
+            fail_msg: bytes = f"{BET_HEADER} fail\n".encode("utf-8")
             client_sock.send_all(fail_msg)
         except ValueError as e:
             logging.error(
