@@ -7,6 +7,8 @@ import (
 
 type PacketType string
 
+const FAIL_RESULT = "fail"
+
 // Packet types enum
 const (
 	Bet                PacketType = "bet"

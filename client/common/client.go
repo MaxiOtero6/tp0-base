@@ -93,7 +93,7 @@ func (c *Client) NotifyAllBetsSent() (ret bool) {
 	case <-c.done:
 		return
 	default:
-		msgToSend := []byte(fmt.Sprintf("betdraw %v\n", c.config.ID))
+		msgToSend := []byte(fmt.Sprintf("%v %v\n", packets.BetDraw, c.config.ID))
 
 		response, err := c.stopAndWait(msgToSend)
 
@@ -101,7 +101,7 @@ func (c *Client) NotifyAllBetsSent() (ret bool) {
 			return
 		}
 
-		if response == "fail" {
+		if response == packets.FAIL_RESULT {
 			log.Errorf("action: notificar_sorteo | result: fail | client_id: %v", c.config.ID)
 			return
 		}
@@ -123,7 +123,7 @@ func (c *Client) RequestDrawResults() (ret bool) {
 		return
 	default:
 		for winners == nil {
-			msgToSend := []byte(fmt.Sprintf("betdrawresults %v\n", c.config.ID))
+			msgToSend := []byte(fmt.Sprintf("%v %v\n", packets.DrawResults, c.config.ID))
 			response, err := c.stopAndWait(msgToSend)
 
 			if err != nil {
