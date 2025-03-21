@@ -53,10 +53,10 @@ def main():
                   f"listen_backlog: {listen_backlog} | logging_level: {logging_level}")
 
     clients_amount: int = int(os.getenv('CLIENTS_AMOUNT', 1))
-    
+
     # Initialize server and start server loop
-    server = Server(port, listen_backlog)
-    server.run(clients_amount)
+    server = Server(port, listen_backlog, clients_amount)
+    server.run()
 
 
 def initialize_log(logging_level):

@@ -3,22 +3,22 @@ import logging
 from comms.socket import Socket
 from common.utils import Bet, has_won, load_bets, store_bets
 from comms.packet import BetDeserializationError, deserialize_bets, deserialize_header
+from server.common.bet_monitor import Action, BetMonitor
 
 
 class Server:
-    def __init__(self, port: int, listen_backlog: int):
+    def __init__(self, port: int, listen_backlog: int, clients_amount: int):
         # Initialize server socket
         self._server_socket = Socket(
             address=('', port), listen_backlog=listen_backlog
         )
 
+        self.__bet_monitor: BetMonitor = BetMonitor(clients_amount)
         self._running = False
-        self._agencies_ready_to_draw: set = set()
-        self._bet_winners_by_agency: dict[int, list[Bet]] = dict()
 
         signal.signal(signal.SIGTERM, self.__shutdown)
 
-    def run(self, clients_amount: int) -> None:
+    def run(self) -> None:
         """
         Dummy Server loop
 
@@ -35,9 +35,6 @@ class Server:
             try:
                 client_sock = self.__accept_new_connection()
                 self.__handle_client_connection(client_sock)
-                
-                if len(self._agencies_ready_to_draw) == clients_amount:
-                    self.__draw_bets()
 
             except OSError as e:
                 if self._running:
@@ -79,21 +76,6 @@ class Server:
         finally:
             client_sock.close()
 
-    def __draw_bets(self) -> None:
-        """
-        Draw bets and store winners by agency
-        """
-        bets: list[Bet] = load_bets()
-        winners: list[Bet] = [bet for bet in bets if has_won(bet)]
-
-        for agency_id in self._agencies_ready_to_draw:
-            self._bet_winners_by_agency[agency_id] = [
-                bet for bet in winners if bet.agency == agency_id
-            ]
-
-        self._agencies_ready_to_draw.clear()
-        logging.info("action: sorteo | result: success")
-
     def __handle_bet(self, client_sock: Socket, msg: str) -> None:
         """
         Store the bets received from the client
@@ -101,7 +83,10 @@ class Server:
         """
         try:
             bet_batch: list[Bet] = deserialize_bets(msg)
-            store_bets(bet_batch)
+
+            self.__bet_monitor.push_action(
+                (Action.STORE_BETS, bet_batch)
+            )
 
             logging.info(
                 f"action: apuesta_recibida | result: success | cantidad: {len(bet_batch)}"
@@ -125,7 +110,9 @@ class Server:
         try:
             client_id: int = int(msg)
 
-            self._agencies_ready_to_draw.add(client_id)
+            self.__bet_monitor.push_action(
+                (Action.REGISTER_READY_AGENCY, client_id)
+            )
 
             logging.info(
                 f"action: confirmacion_sorteo | result: success | id: {client_id}"
@@ -151,7 +138,7 @@ class Server:
         try:
             agency_id: int = int(msg)
 
-            winners: list[Bet] = self._bet_winners_by_agency.pop(agency_id)
+            winners: list[Bet] = self.__bet_monitor.request_winners(agency_id)
             winners_documents: str = "&".join([i.document for i in winners])
 
             winners_msg: bytes = f"betdrawresults success {winners_documents}\n".encode(
@@ -182,10 +169,13 @@ class Server:
         """
         Shutdown server
 
-        Function that closes the server socket and stops the server loop
+        Function that closes the server socket, stops the server loop
+        and waits for the bet monitor to join
         """
         self._running = False
         self._server_socket.close()
+        self.__bet_monitor.shutdown()
+
         signal_name: str = signal.Signals(signum).name
         logging.info(
             f'action: exit | result: success | signal: {signal_name}')
