@@ -54,24 +54,21 @@ func (p *Parser) newBets() ([]packets.BetPacket, error) {
 		}
 
 		if err != nil {
-			// TODO
-			fmt.Println("err")
-			continue
+			log.Warningf("action: read_line | result: fail | error: %v", err)
+			return nil, err
 		}
 
 		split := strings.Split(line, ",")
 
 		if len(split) != 5 {
-			// TODO
-			fmt.Println("len err")
+			log.Warningf("action: split_line | result: fail | line: %v", line)
 			continue
 		}
 
 		number, err := strconv.Atoi(split[4])
 
 		if err != nil {
-			// TODO
-			fmt.Println("num err")
+			log.Warningf("action: parse_number | result: fail | number: %v", split[4])
 			continue
 		}
 
