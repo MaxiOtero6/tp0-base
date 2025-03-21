@@ -49,6 +49,10 @@ func (s *Socket) ReadAll() ([]byte, error) {
 			break
 		}
 	}
+	
+	if len(result) == 0 {
+		return nil, io.EOF
+	}
 
 	return result[:len(result)-1], nil // Remove '\n'
 }
