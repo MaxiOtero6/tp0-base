@@ -1,5 +1,7 @@
 from common.utils import Bet
 
+BET_HEADER = "bet"
+
 
 def deserialize(data: bytes) -> Bet:
     """
@@ -7,7 +9,7 @@ def deserialize(data: bytes) -> Bet:
     """
     split = data.decode("utf-8").split(" ")
 
-    if len(split) != 7 or split.pop(0) != "bet":
+    if len(split) != 7 or split.pop(0) != BET_HEADER:
         raise ValueError("Invalid message format")
 
     agency: str = split.pop(0)
@@ -24,4 +26,4 @@ def serialize(bet: Bet) -> bytes:
     """
     Serialize a Bet object to a byte string.
     """
-    return f"bet {bet.document} {bet.number}\n".encode("utf-8")
+    return f"{BET_HEADER} {bet.document} {bet.number}\n".encode("utf-8")
