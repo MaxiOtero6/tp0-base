@@ -2,7 +2,7 @@ import signal
 import logging
 from comms.socket import Socket
 from common.utils import Bet, has_won, load_bets, store_bets
-from comms.packet import BetDeserializationError, deserialize_bets, deserialize_header
+from comms.packet import BetDeserializationError, PacketHeader, deserialize_bets, deserialize_header
 
 
 class Server:
@@ -35,7 +35,7 @@ class Server:
             try:
                 client_sock = self.__accept_new_connection()
                 self.__handle_client_connection(client_sock)
-                
+
                 if len(self._agencies_ready_to_draw) == clients_amount:
                     self.__draw_bets()
 
@@ -61,11 +61,11 @@ class Server:
 
             header, body = deserialize_header(msg)
 
-            if header == "bet":
+            if header == PacketHeader.BET.value:
                 self.__handle_bet(client_sock, body)
-            elif header == "betdraw":
+            elif header == PacketHeader.BETDRAW.value:
                 self.__handle_draw(client_sock, body)
-            elif header == "betdrawresults":
+            elif header == PacketHeader.DRAWRESULTS.value:
                 self.__handle_bet_results(client_sock, body)
             else:
                 logging.error(
@@ -107,14 +107,16 @@ class Server:
                 f"action: apuesta_recibida | result: success | cantidad: {len(bet_batch)}"
             )
 
-            success_msg: bytes = "bet success\n".encode("utf-8")
+            success_msg: bytes = f"{PacketHeader.BET.value} success\n".encode(
+                "utf-8")
             client_sock.send_all(success_msg)
         except BetDeserializationError as e:
             logging.error(
                 f"action: apuesta_recibida | result: fail | cantidad: {e.bets_len}"
             )
 
-            fail_msg: bytes = "bet fail\n".encode("utf-8")
+            fail_msg: bytes = f"{PacketHeader.BET.value} fail\n".encode(
+                "utf-8")
             client_sock.send_all(fail_msg)
 
     def __handle_draw(self, client_sock: Socket, msg: str) -> None:
@@ -131,14 +133,16 @@ class Server:
                 f"action: confirmacion_sorteo | result: success | id: {client_id}"
             )
 
-            success_msg: bytes = "betdraw success\n".encode("utf-8")
+            success_msg: bytes = f"{PacketHeader.BETDRAW.value} success\n".encode(
+                "utf-8")
             client_sock.send_all(success_msg)
         except ValueError as e:
             logging.error(
                 f"action: confirmacion_sorteo | result: fail"
             )
 
-            fail_msg: bytes = "betdraw fail\n".encode("utf-8")
+            fail_msg: bytes = f"{PacketHeader.BETDRAW.value} fail\n".encode(
+                "utf-8")
             client_sock.send_all(fail_msg)
 
     def __handle_bet_results(self, client_sock: Socket, msg: str) -> None:
@@ -154,7 +158,7 @@ class Server:
             winners: list[Bet] = self._bet_winners_by_agency.pop(agency_id)
             winners_documents: str = "&".join([i.document for i in winners])
 
-            winners_msg: bytes = f"betdrawresults success {winners_documents}\n".encode(
+            winners_msg: bytes = f"{PacketHeader.DRAWRESULTS.value} success {winners_documents}\n".encode(
                 "utf-8")
 
             logging.info(
@@ -163,7 +167,8 @@ class Server:
 
             client_sock.send_all(winners_msg)
         except (ValueError, KeyError) as e:
-            fail_msg: bytes = "betdrawresults fail\n".encode("utf-8")
+            fail_msg: bytes = f"{PacketHeader.DRAWRESULTS.value} fail\n".encode(
+                "utf-8")
             client_sock.send_all(fail_msg)
 
     def __accept_new_connection(self) -> Socket:
