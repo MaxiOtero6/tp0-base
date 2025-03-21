@@ -4,7 +4,7 @@ from threading import Thread
 from comms.socket import Socket
 from common.utils import Bet, has_won, load_bets, store_bets
 from comms.packet import BetDeserializationError, deserialize_bets, deserialize_header
-from server.common.bet_monitor import Action, BetMonitor
+from common.bet_monitor import Action, BetMonitor
 
 
 class Server:
