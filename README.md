@@ -15,7 +15,7 @@ De aqui en mas, toda modificacion que quiera hacerse a la ejecucion de docker-co
 Luego de ejecutar generar-compose.sh se puede levantar con docker-compose los servicios de la siguiente manera
 
 ```
-docker-compose -f ${OUTPUT_FILE_PATH} up -d #detach o alguna otra alternativa
+docker-compose -f ${OUTPUT_FILE_PATH} up --build -d #detach o alguna otra alternativa
 # Para detener la ejecucion
 docker-compose -f ${OUTPUT_FILE_PATH} down
 ```
