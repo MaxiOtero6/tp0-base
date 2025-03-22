@@ -1,4 +1,6 @@
-# Resolucion ejercicio 1
+# Resolucion
+
+## Ejercicio 1
 
 Para este ejercicio se creo el script de bash generar-compose.sh el cual se debe ejecutar de la siguiente manera
 
@@ -14,6 +16,8 @@ Luego de ejecutar generar-compose.sh se puede levantar con docker-compose los se
 
 ```
 docker-compose -f ${OUTPUT_FILE_PATH} up -d #detach o alguna otra alternativa
+# Para detener la ejecucion
+docker-compose -f ${OUTPUT_FILE_PATH} down
 ```
 
 # TP0: Docker + Comunicaciones + Concurrencia
