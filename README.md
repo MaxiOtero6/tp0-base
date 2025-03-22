@@ -18,7 +18,7 @@ Para ejecutar este ejercicio se pueden utilizar los siguientes comandos:
 
 ```
 bash generar-compose.sh ${OUTPUT_FILE_PATH} ${CLIENTS_AMOUNT}
-docker-compose -f ${OUTPUT_FILE_PATH} up -d #detach o alguna otra alternativa
+docker-compose -f ${OUTPUT_FILE_PATH} up --build -d #detach o alguna otra alternativa
 # Para enviar SIGTERM a un container en especifico
 docker stop ${CONTAINER_NAME}
 ```
