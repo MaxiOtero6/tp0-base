@@ -19,11 +19,15 @@ En el lado cliente se reciben los datos de la apuesta a enviar mediante variable
 
 El protocolo utilizado es en formato de texto plano con '\n' como el caracter delimitador, de la siguiente manera:
 
-"${HEADER} ${PAYLOAD}\n"
+```
+${HEADER} ${PAYLOAD}\n
+```
 
 En el caso de una apuesta seria de la forma:
 
-"bet ${AGENCY_NUMBER} ${FIRSTNAME} ${LASTNAME} ${DOCUMENT} ${BIRTHDAY} ${NUMBER}\n"
+```
+bet ${AGENCY_NUMBER} ${FIRSTNAME} ${LASTNAME} ${DOCUMENT} ${BIRTHDAY} ${NUMBER}\n
+```
 
 En donde cada dato del payload esta separado por un espacio " ". Si se tratara el caso de que FIRSTNAME y/o LASTNAME sean compuestos e.g. "Maximiliano Nicolas", se reemplazara el espacio por un '-' quedando "Maximiliano-Nicolas" realizandose la operacion inversa en el lado receptor.
 
