@@ -38,6 +38,30 @@ bet ${AGENCY_NUMBER_1} ${FIRSTNAME_1} ${LASTNAME_1} ${DOCUMENT_1} ${BIRTHDAY_1} 
 
 Separando cada apuesta de la siguiente con el caracter '&'
 
+### Calculo maxBatchAmount
+
+Por cada apuesta tenemos:
+
+```
+bytes p/bet:
+1 agency
+60 firstname
+60 lastname
+8 document
+10 birthdate
+4 number
+5 padding
+total: 148 bytes
+```
+
+Por lo cual en 8kB entrarian:
+
+```
+8 kilobytes / 148 bytes = 55.35
+```
+
+Pero teniendo en cuenta el header y los delimitadores entre cada apuesta, redondeamos el maxBatchAmount en 54
+
 ### Ejecucion
 
 Para ejecutar este ejercicio se pueden utilizar los siguientes comandos:
