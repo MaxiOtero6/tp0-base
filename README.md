@@ -12,7 +12,7 @@ Para ejecutar este ejercicio se pueden utilizar los siguientes comandos:
 
 ```
 bash generar-compose.sh ${OUTPUT_FILE_PATH} ${CLIENTS_AMOUNT}
-docker-compose -f ${OUTPUT_FILE_PATH} up -d #detach o alguna otra alternativa
+docker-compose -f ${OUTPUT_FILE_PATH} up --build -d #detach o alguna otra alternativa
 # Para detener la ejecucion
 docker-compose -f ${OUTPUT_FILE_PATH} down
 ```
