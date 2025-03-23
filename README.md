@@ -103,6 +103,20 @@ Separando cada documento del siguiente con el caracter '&'
 betdrawresults fail\n
 ```
 
+#### En el caso de querer finalizar la conexion con el servidor
+
+El cliente enviara
+
+```
+shutdown-connection success
+```
+
+A lo cual el servidor respondera
+
+```
+shutdown-connection success
+```
+
 ### Ejecucion
 
 Para ejecutar este ejercicio se pueden utilizar los siguientes comandos:
