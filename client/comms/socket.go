@@ -24,7 +24,9 @@ func NewSocket(address string) (Socket, error) {
 
 // Close Closes the socket connection
 func (s *Socket) Close() {
-	s.conn.Close()
+	if s.conn != nil {
+		s.conn.Close()
+	}
 }
 
 // ReadAll Reads all the data from the socket connection avoiding short reads
