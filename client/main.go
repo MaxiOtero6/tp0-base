@@ -97,7 +97,7 @@ func handleSigterm(signalChan chan os.Signal, client *common.Client) {
 	client.Shutdown()
 
 	log.Infof("action: exit | result: success | signal: %v",
-	s.String(),
+		s.String(),
 	)
 }
 
@@ -125,8 +125,9 @@ func main() {
 	}
 
 	client := common.NewClient(clientConfig)
-	
+
 	go handleSigterm(signalChan, client)
 
 	client.StartClientLoop()
+	client.Shutdown()
 }

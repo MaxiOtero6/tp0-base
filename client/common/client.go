@@ -21,9 +21,9 @@ type ClientConfig struct {
 
 // Client Entity that encapsulates how
 type Client struct {
-	config  ClientConfig
-	conn    net.Conn
-	done chan bool
+	config ClientConfig
+	conn   net.Conn
+	done   chan bool
 }
 
 // NewClient Initializes a new client receiving the configuration
@@ -31,7 +31,7 @@ type Client struct {
 func NewClient(config ClientConfig) *Client {
 	client := &Client{
 		config: config,
-		done: make(chan bool, 1),
+		done:   make(chan bool, 1),
 	}
 	return client
 }
@@ -64,7 +64,7 @@ func (c *Client) StartClientLoop() {
 
 			// Create the connection the server in every loop iteration. Send an
 			c.createClientSocket()
-			
+
 			// TODO: Modify the send to avoid short-write
 			fmt.Fprintf(
 				c.conn,
@@ -82,15 +82,15 @@ func (c *Client) StartClientLoop() {
 				)
 				return
 			}
-			
+
 			log.Infof("action: receive_message | result: success | client_id: %v | msg: %v",
 				c.config.ID,
 				msg,
 			)
-		
+
 			// Wait a time between sending one message and the next one
 			time.Sleep(c.config.LoopPeriod)
-	
+
 		}
 	}
 
@@ -99,5 +99,7 @@ func (c *Client) StartClientLoop() {
 
 func (c *Client) Shutdown() {
 	close(c.done)
-	c.conn.Close()
+	if c.conn != nil {
+		c.conn.Close()
+	}
 }
