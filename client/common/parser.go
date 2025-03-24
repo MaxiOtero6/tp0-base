@@ -36,7 +36,9 @@ func newParser(clientId int, maxBatchAmount int) (*Parser, error) {
 
 // close Closes the file
 func (p *Parser) close() {
-	p.file.Close()
+	if p.file != nil {
+		p.file.Close()
+	}
 }
 
 // newBet Creates a new bet batch reading data from the agency csv file
