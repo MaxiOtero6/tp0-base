@@ -131,4 +131,5 @@ func main() {
 	maxBatchAmount := v.GetInt("batch.maxAmount")
 
 	client.Run(maxBatchAmount)
+	client.Shutdown()
 }
