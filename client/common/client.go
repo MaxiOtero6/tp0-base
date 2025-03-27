@@ -85,6 +85,8 @@ func (c *Client) Run(maxBatchAmount int) {
 	}
 
 	c.shutdownConnection()
+	// Wait docker to flush stdout/stderr before exiting
+	time.Sleep(c.config.LoopPeriod)
 }
 
 // NotifyAllBetsSent Notifies the server that all bets have been sent
@@ -93,23 +95,25 @@ func (c *Client) NotifyAllBetsSent() (ret bool) {
 	case <-c.done:
 		return
 	default:
-		msgToSend := []byte(fmt.Sprintf("%v %v\n", packets.BetDraw, c.config.ID))
+		for {
+			msgToSend := []byte(fmt.Sprintf("%v %v\n", packets.BetDraw, c.config.ID))
 
-		response, err := c.stopAndWait(msgToSend)
+			response, err := c.stopAndWait(msgToSend)
 
-		if err != nil {
+			if err != nil {
+				return
+			}
+
+			if response == packets.FAIL_RESULT {
+				log.Errorf("action: notificar_sorteo | result: fail | client_id: %v", c.config.ID)
+				continue
+			}
+
+			log.Infof("action: notificar_sorteo | result: success | client_id: %v", c.config.ID)
+
+			ret = true
 			return
 		}
-
-		if response == packets.FAIL_RESULT {
-			log.Errorf("action: notificar_sorteo | result: fail | client_id: %v", c.config.ID)
-			return
-		}
-
-		log.Infof("action: notificar_sorteo | result: success | client_id: %v", c.config.ID)
-
-		ret = true
-		return
 	}
 }
 
@@ -127,6 +131,7 @@ func (c *Client) RequestDrawResults() (ret bool) {
 			response, err := c.stopAndWait(msgToSend)
 
 			if err != nil {
+				log.Infof("action: consulta_ganadores | result: fail")
 				return
 			}
 
@@ -253,9 +258,6 @@ outer:
 			)
 
 			log.Infof("action: apuesta_enviada | result: %v | client_id: %v", response, c.config.ID)
-
-			// Wait a time between sending one message and the next one
-			time.Sleep(c.config.LoopPeriod)
 		}
 	}
 
