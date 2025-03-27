@@ -116,9 +116,6 @@ func (c *Client) StartClientLoop() {
 				response.Document,
 				response.Number,
 			)
-
-			// Wait a time between sending one message and the next one
-			time.Sleep(c.config.LoopPeriod)
 		}
 	}
 
