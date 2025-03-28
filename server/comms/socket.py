@@ -9,6 +9,7 @@ class Socket:
     """
     _socket: socket.socket
     address: tuple[str, int]
+    _recv_buffer: bytes = b''
 
     def __init__(self, address: tuple[str, int], skt: Optional[socket.socket] = None, listen_backlog: int = 5) -> None:
         self.address = address
