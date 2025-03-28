@@ -9,6 +9,7 @@ class Socket:
     """
     _socket: socket.socket
     address: tuple[str, int]
+    _recv_buffer: bytes = b''
 
     def __init__(self, address: tuple[str, int], skt: Optional[socket.socket] = None, listen_backlog: int = 5) -> None:
         self.address = address
@@ -53,11 +54,21 @@ class Socket:
         Receive all data from the socket avoiding short reads
         """
         data: bytes = b''
+        split_buff: list[bytes] = []
 
-        while not data or data[-1] != ord('\n'):
+        # if a \n is found in the buffer, len(split_buff) will be 2 
+        while not data or len(split_buff) <= 1:
+            if self._recv_buffer:
+                split_buff = self._recv_buffer.split(b'\n', 1)
+
+                data += split_buff[0]
+                self._recv_buffer = split_buff[1] if len(
+                    split_buff) > 1 else b''
+                continue
+
             chunk = self._socket.recv(1024)
             if not chunk:
                 raise BrokenPipeError("Connection closed by peer")
-            data += chunk
+            self._recv_buffer += chunk
 
-        return data[:-1]  # Remove '\n'
+        return data
