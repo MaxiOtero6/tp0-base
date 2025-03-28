@@ -9,6 +9,7 @@ class Socket:
     """
     _socket: socket.socket
     address: tuple[str, int]
+    _recv_buffer: bytes = b''
 
     def __init__(self, address: tuple[str, int], skt: Optional[socket.socket] = None, listen_backlog: int = 5) -> None:
         self.address = address
@@ -55,7 +56,7 @@ class Socket:
         data: bytes = b''
         split_buff: list[bytes] = []
 
-        # if a \n is found in the buffer, len(split_buff) will be 2 
+        # if a \n is found in the buffer, len(split_buff) will be 2
         while not data or len(split_buff) <= 1:
             if self._recv_buffer:
                 split_buff = self._recv_buffer.split(b'\n', 1)
